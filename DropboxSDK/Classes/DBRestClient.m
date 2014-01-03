@@ -163,11 +163,13 @@
     if (request.statusCode == 304) {
         if ([delegate respondsToSelector:@selector(restClient:metadataUnchangedAtPath:)]) {
             NSString* path = [request.userInfo objectForKey:@"path"];
+            [[self retain] autorelease];
             [delegate restClient:self metadataUnchangedAtPath:path];
         }
     } else if (request.error) {
         [self checkForAuthenticationFailure:request];
         if ([delegate respondsToSelector:@selector(restClient:loadMetadataFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self loadMetadataFailedWithError:request.error];
         }
     } else {
@@ -205,6 +207,7 @@
 
 - (void)didParseMetadata:(DBMetadata*)metadata {
     if ([delegate respondsToSelector:@selector(restClient:loadedMetadata:)]) {
+        [[self retain] autorelease];
         [delegate restClient:self loadedMetadata:metadata];
     }
 }
@@ -214,6 +217,7 @@
         [NSError errorWithDomain:DBErrorDomain code:DBErrorInvalidResponse userInfo:request.userInfo];
     DBLogWarning(@"DropboxSDK: error parsing metadata");
     if ([delegate respondsToSelector:@selector(restClient:loadMetadataFailedWithError:)]) {
+        [[self retain] autorelease];
         [delegate restClient:self loadMetadataFailedWithError:error];
     }
 }
@@ -242,6 +246,7 @@
     if (request.error) {
         [self checkForAuthenticationFailure:request];
         if ([delegate respondsToSelector:@selector(restClient:loadDeltaFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self loadDeltaFailedWithError:request.error];
         }
     } else {
@@ -261,6 +266,7 @@
 }
 
 - (void)parseDeltaWithRequest:(DBRequest *)request resultThread:(NSThread *)thread {
+    [[self retain] autorelease];
     NSAutoreleasePool* pool = [NSAutoreleasePool new];
 
     NSDictionary* result = [request parseResponseAsType:[NSDictionary class]];
@@ -303,6 +309,7 @@
         [NSError errorWithDomain:DBErrorDomain code:DBErrorInvalidResponse userInfo:request.userInfo];
     DBLogWarning(@"DropboxSDK: error parsing metadata");
     if ([delegate respondsToSelector:@selector(restClient:loadDeltaFailedWithError:)]) {
+        [[self retain] autorelease];
         [delegate restClient:self loadDeltaFailedWithError:error];
     }
 }
@@ -347,6 +354,7 @@
 
 - (void)requestLoadProgress:(DBRequest*)request {
     if ([delegate respondsToSelector:@selector(restClient:loadProgress:forFile:)]) {
+        [[self retain] autorelease];
         [delegate restClient:self loadProgress:request.downloadProgress forFile:request.resultFilename];
     }
 }
@@ -363,6 +371,7 @@ contentType:(NSString*)contentType eTag:(NSString*)eTag {
     if (request.error) {
         [self checkForAuthenticationFailure:request];
         if ([delegate respondsToSelector:@selector(restClient:loadFileFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self loadFileFailedWithError:request.error];
         }
     } else {
@@ -372,14 +381,18 @@ contentType:(NSString*)contentType eTag:(NSString*)eTag {
         NSDictionary* metadataDict = [request xDropboxMetadataJSON];
         NSString* eTag = [headers objectForKey:@"Etag"];
         if ([delegate respondsToSelector:@selector(restClient:loadedFile:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self loadedFile:filename];
         } else if ([delegate respondsToSelector:@selector(restClient:loadedFile:contentType:metadata:)]) {
             DBMetadata* metadata = [[[DBMetadata alloc] initWithDictionary:metadataDict] autorelease];
+            [[self retain] autorelease];
             [delegate restClient:self loadedFile:filename contentType:contentType metadata:metadata];
         } else if ([delegate respondsToSelector:@selector(restClient:loadedFile:contentType:)]) {
             // This callback is deprecated and this block exists only for backwards compatibility.
+            [[self retain] autorelease];
             [delegate restClient:self loadedFile:filename contentType:contentType];
         } else if ([delegate respondsToSelector:@selector(restClient:loadedFile:contentType:eTag:)]) {
+            [[self retain] autorelease];
             // This code is for the official Dropbox client to get eTag information from the server
             NSMethodSignature* signature = 
                 [self methodSignatureForSelector:@selector(restClient:loadedFile:contentType:eTag:)];
@@ -444,6 +457,7 @@ contentType:(NSString*)contentType eTag:(NSString*)eTag {
     if (request.error) {
         [self checkForAuthenticationFailure:request];
         if ([delegate respondsToSelector:@selector(restClient:loadThumbnailFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self loadThumbnailFailedWithError:request.error];
         }
     } else {
@@ -451,9 +465,11 @@ contentType:(NSString*)contentType eTag:(NSString*)eTag {
         NSDictionary* metadataDict = [request xDropboxMetadataJSON];
         if ([delegate respondsToSelector:@selector(restClient:loadedThumbnail:metadata:)]) {
             DBMetadata* metadata = [[[DBMetadata alloc] initWithDictionary:metadataDict] autorelease];
+            [[self retain] autorelease];
             [delegate restClient:self loadedThumbnail:filename metadata:metadata];
         } else if ([delegate respondsToSelector:@selector(restClient:loadedThumbnail:)]) {
             // This callback is deprecated and this block exists only for backwards compatibility.
+            [[self retain] autorelease];
             [delegate restClient:self loadedThumbnail:filename];
         }
     }
@@ -527,6 +543,7 @@ params:(NSDictionary *)params
         NSString *errorMsg = isDir ? @"Unable to upload folders" : @"File does not exist";
         DBLogWarning(@"DropboxSDK: %@ (%@)", errorMsg, sourcePath);
         if ([delegate respondsToSelector:@selector(restClient:uploadFileFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self uploadFileFailedWithError:error];
         }
         return;
@@ -591,6 +608,7 @@ params:(NSDictionary *)params
     NSString* destPath = [request.userInfo objectForKey:@"destinationPath"];
 
     if ([delegate respondsToSelector:@selector(restClient:uploadProgress:forFile:from:)]) {
+        [[self retain] autorelease];
         [delegate restClient:self uploadProgress:request.uploadProgress
                     forFile:destPath from:sourcePath];
     }
@@ -603,6 +621,7 @@ params:(NSDictionary *)params
     if (!result) {
         [self checkForAuthenticationFailure:request];
         if ([delegate respondsToSelector:@selector(restClient:uploadFileFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self uploadFileFailedWithError:request.error];
         }
     } else {
@@ -612,8 +631,10 @@ params:(NSDictionary *)params
         NSString* destPath = [request.userInfo objectForKey:@"destinationPath"];
         
         if ([delegate respondsToSelector:@selector(restClient:uploadedFile:from:metadata:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self uploadedFile:destPath from:sourcePath metadata:metadata];
         } else if ([delegate respondsToSelector:@selector(restClient:uploadedFile:from:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self uploadedFile:destPath from:sourcePath];
         }
     }
@@ -639,6 +660,7 @@ params:(NSDictionary *)params
 									  [NSNumber numberWithLongLong:offset], @"offset",
 									  uploadId, @"upload_id", nil];
 			NSError *error = [NSError errorWithDomain:DBErrorDomain code:DBErrorFileNotFound userInfo:userInfo];
+            [[self retain] autorelease];
 			[delegate restClient:self uploadFileChunkFailedWithError:error];
 		} else {
 			DBLogWarning(@"DropboxSDK: unable to read file in -[DBRestClient uploadFileChunk:offset:fromPath:] (fromPath=%@)", localPath);
@@ -689,6 +711,7 @@ params:(NSDictionary *)params
 	NSString *fromPath = [request.userInfo objectForKey:@"fromPath"];
 
     if ([delegate respondsToSelector:@selector(restClient:uploadFileChunkProgress:forFile:offset:fromPath:)]) {
+        [[self retain] autorelease];
 		[delegate restClient:self uploadFileChunkProgress:request.uploadProgress
 				forFile:uploadId offset:offset fromPath:fromPath];
     }
@@ -699,6 +722,7 @@ params:(NSDictionary *)params
 
 	if (!resp) {
 		if ([delegate respondsToSelector:@selector(restClient:uploadFileChunkFailedWithError:)]) {
+            [[self retain] autorelease];
 			[delegate restClient:self uploadFileChunkFailedWithError:request.error];
 		}
 	} else {
@@ -708,6 +732,7 @@ params:(NSDictionary *)params
 		NSDateFormatter *dateFormatter = [DBMetadata dateFormatter];
 		NSDate *expires = [dateFormatter dateFromString:[resp objectForKey:@"expires"]];
 		if ([delegate respondsToSelector:@selector(restClient:uploadedFileChunk:newOffset:fromFile:expires:)]) {
+            [[self retain] autorelease];
 			[delegate restClient:self uploadedFileChunk:uploadId newOffset:newOffset fromFile:localPath expires:expires];
 		}
 	}
@@ -753,6 +778,7 @@ params:(NSDictionary *)params
 
 	if (!resp) {
 		if ([delegate respondsToSelector:@selector(restClient:uploadFromUploadIdFailedWithError:)]) {
+            [[self retain] autorelease];
 			[delegate restClient:self uploadFromUploadIdFailedWithError:request.error];
 		}
 	} else {
@@ -761,6 +787,7 @@ params:(NSDictionary *)params
 		DBMetadata *metadata = [[[DBMetadata alloc] initWithDictionary:resp] autorelease];
 
 		if ([delegate respondsToSelector:@selector(restClient:uploadedFile:fromUploadId:metadata:)]) {
+            [[self retain] autorelease];
 			[delegate restClient:self uploadedFile:destPath fromUploadId:uploadId metadata:metadata];
 		}
 	}
@@ -797,6 +824,7 @@ params:(NSDictionary *)params
     
     if (!resp) {
         if ([delegate respondsToSelector:@selector(restClient:loadRevisionsFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self loadRevisionsFailedWithError:request.error];
         }
     } else {
@@ -809,6 +837,7 @@ params:(NSDictionary *)params
         NSString *path = [request.userInfo objectForKey:@"path"];
 
         if ([delegate respondsToSelector:@selector(restClient:loadedRevisions:forFile:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self loadedRevisions:revisions forFile:path];
         }
     }
@@ -837,11 +866,13 @@ params:(NSDictionary *)params
 
     if (!dict) {
         if ([delegate respondsToSelector:@selector(restClient:restoreFileFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self restoreFileFailedWithError:request.error];
         }
     } else {
         DBMetadata *metadata = [[[DBMetadata alloc] initWithDictionary:dict] autorelease];
         if ([delegate respondsToSelector:@selector(restClient:restoredFile:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self restoredFile:metadata];
         }
     }
@@ -874,6 +905,7 @@ params:(NSDictionary *)params
     if (request.error) {
         [self checkForAuthenticationFailure:request];
         if ([delegate respondsToSelector:@selector(restClient:movePathFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self movePathFailedWithError:request.error];
         }
     } else {
@@ -882,6 +914,7 @@ params:(NSDictionary *)params
         DBMetadata *metadata = [[[DBMetadata alloc] initWithDictionary:result] autorelease];
 
         if ([delegate respondsToSelector:@selector(restClient:movedPath:to:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self movedPath:[params valueForKey:@"from_path"] to:metadata];
         }
     }
@@ -916,6 +949,7 @@ params:(NSDictionary *)params
     if (request.error) {
         [self checkForAuthenticationFailure:request];
         if ([delegate respondsToSelector:@selector(restClient:copyPathFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self copyPathFailedWithError:request.error];
         }
     } else {
@@ -924,6 +958,7 @@ params:(NSDictionary *)params
         DBMetadata *metadata = [[[DBMetadata alloc] initWithDictionary:result] autorelease];
 
         if ([delegate respondsToSelector:@selector(restClient:copiedPath:to:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self copiedPath:[params valueForKey:@"from_path"] to:metadata];
         }
     }
@@ -952,14 +987,17 @@ params:(NSDictionary *)params
     if (!result) {
         [self checkForAuthenticationFailure:request];
         if ([delegate respondsToSelector:@selector(restClient:createCopyRefFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self createCopyRefFailedWithError:request.error];
         }
     } else {
         NSString *copyRef = [result objectForKey:@"copy_ref"];
 		NSString *path = [request.userInfo objectForKey:@"path"];
 		if ([delegate respondsToSelector:@selector(restClient:createdCopyRef:forPath:)]) {
+            [[self retain] autorelease];
 			[delegate restClient:self createdCopyRef:copyRef forPath:path];
 		} else if ([delegate respondsToSelector:@selector(restClient:createdCopyRef:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self createdCopyRef:copyRef];
         }
     }
@@ -993,12 +1031,14 @@ params:(NSDictionary *)params
     if (!result) {
         [self checkForAuthenticationFailure:request];
         if ([delegate respondsToSelector:@selector(restClient:copyFromRefFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self copyFromRefFailedWithError:request.error];
         }
     } else {
         NSString *copyRef = [request.userInfo objectForKey:@"from_copy_ref"];
         DBMetadata *metadata = [[[DBMetadata alloc] initWithDictionary:result] autorelease];
         if ([delegate respondsToSelector:@selector(restClient:copiedRef:to:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self copiedRef:copyRef to:metadata];
         }
     }
@@ -1031,11 +1071,13 @@ params:(NSDictionary *)params
     if (request.error) {
         [self checkForAuthenticationFailure:request];
         if ([delegate respondsToSelector:@selector(restClient:deletePathFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self deletePathFailedWithError:request.error];
         }
     } else {
         if ([delegate respondsToSelector:@selector(restClient:deletedPath:)]) {
             NSString* path = [request.userInfo objectForKey:@"path"];
+            [[self retain] autorelease];
             [delegate restClient:self deletedPath:path];
         }
     }
@@ -1070,12 +1112,14 @@ params:(NSDictionary *)params
     if (request.error) {
         [self checkForAuthenticationFailure:request];
         if ([delegate respondsToSelector:@selector(restClient:createFolderFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self createFolderFailedWithError:request.error];
         }
     } else {
         NSDictionary* result = (NSDictionary*)[request resultJSON];
         DBMetadata* metadata = [[[DBMetadata alloc] initWithDictionary:result] autorelease];
         if ([delegate respondsToSelector:@selector(restClient:createdFolder:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self createdFolder:metadata];
         }
     }
@@ -1106,12 +1150,14 @@ params:(NSDictionary *)params
     if (request.error) {
         [self checkForAuthenticationFailure:request];
         if ([delegate respondsToSelector:@selector(restClient:loadAccountInfoFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self loadAccountInfoFailedWithError:request.error];
         }
     } else {
         NSDictionary* result = (NSDictionary*)[request resultJSON];
         DBAccountInfo* accountInfo = [[[DBAccountInfo alloc] initWithDictionary:result] autorelease];
         if ([delegate respondsToSelector:@selector(restClient:loadedAccountInfo:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self loadedAccountInfo:accountInfo];
         }
     }
@@ -1139,6 +1185,7 @@ params:(NSDictionary *)params
     if (request.error) {
         [self checkForAuthenticationFailure:request];
         if ([delegate respondsToSelector:@selector(restClient:searchFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self searchFailedWithError:request.error];
         }
     } else {
@@ -1156,6 +1203,7 @@ params:(NSDictionary *)params
         NSString* keyword = [request.userInfo objectForKey:@"keyword"];
         
         if ([delegate respondsToSelector:@selector(restClient:loadedSearchResults:forPath:keyword:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self loadedSearchResults:results forPath:path keyword:keyword];
         }
     }
@@ -1189,12 +1237,14 @@ params:(NSDictionary *)params
     if (request.error) {
         [self checkForAuthenticationFailure:request];
         if ([delegate respondsToSelector:@selector(restClient:loadSharableLinkFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self loadSharableLinkFailedWithError:request.error];
         }
     } else {
         NSString* sharableLink = [(NSDictionary*)request.resultJSON objectForKey:@"url"];
         NSString* path = [request.userInfo objectForKey:@"path"];
         if ([delegate respondsToSelector:@selector(restClient:loadedSharableLink:forFile:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self loadedSharableLink:sharableLink forFile:path];
         }
     }
@@ -1219,6 +1269,7 @@ params:(NSDictionary *)params
     if (request.error) {
         [self checkForAuthenticationFailure:request];
         if ([delegate respondsToSelector:@selector(restClient:loadStreamableURLFailedWithError:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self loadStreamableURLFailedWithError:request.error];
         }
     } else {
@@ -1226,6 +1277,7 @@ params:(NSDictionary *)params
         NSURL *url = [NSURL URLWithString:[response objectForKey:@"url"]];
         NSString *path = [request.userInfo objectForKey:@"path"];
         if ([delegate respondsToSelector:@selector(restClient:loadedStreamableURL:forFile:)]) {
+            [[self retain] autorelease];
             [delegate restClient:self loadedStreamableURL:url forFile:path];
         }
     }
