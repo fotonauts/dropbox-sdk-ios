@@ -1,1 +1,10 @@
-xcuserdata
+build/
+*.pbxuser
+*.perspectivev3
+.gitignore
+*.xcworkspace
+xcuserdata/
+.DS_Store
+*~
+goo.*
+Sources/DLGitVersion.m
