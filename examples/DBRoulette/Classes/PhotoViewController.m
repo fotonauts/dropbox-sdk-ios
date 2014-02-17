@@ -59,6 +59,11 @@
     }
 }
 
+- (void)viewWillDisappear:(BOOL)animated {
+    [restClient release];
+    restClient = nil;
+}
+
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation {
     if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPhone) {
         return toInterfaceOrientation == UIInterfaceOrientationPortrait;

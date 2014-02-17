@@ -281,10 +281,8 @@ extern id<DBNetworkRequestDelegate> dbNetworkRequestDelegate;
     id<UIApplicationDelegate> delegate = app.delegate;
 
     if ([delegate respondsToSelector:@selector(application:openURL:sourceApplication:annotation:)]) {
-        [[self retain] autorelease];
         [delegate application:app openURL:openUrl sourceApplication:@"com.getdropbox.Dropbox" annotation:nil];
     } else if ([delegate respondsToSelector:@selector(application:handleOpenURL:)]) {
-        [[self retain] autorelease];
         [delegate application:app handleOpenURL:openUrl];
     } else {
 		DBLogError(@"DropboxSDK: app delegate does not implement application:openURL:sourceApplication:annotation:");
